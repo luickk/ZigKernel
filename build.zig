@@ -13,11 +13,7 @@ pub fn build(b: *std.build.Builder) void {
     const mode = b.standardReleaseOptions();
     const exe = b.addStaticLibrary("kernel", "src/kernel.zig");
 
-    exe.setTarget(.{
-        .cpu_arch = std.Target.Cpu.Arch.x86_64,
-        .os_tag = std.Target.Os.Tag.windows,
-        .abi = std.Target.Abi.none,
-    });
+    exe.setTarget(.{ .cpu_arch = std.Target.Cpu.Arch.x86_64, .os_tag = std.Target.Os.Tag.freestanding });
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
 
     exe.addCSourceFile("src/boot.s", &.{});
