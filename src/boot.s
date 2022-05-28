@@ -15,18 +15,16 @@ stackTop:
 
 .section .text
 .global _start
-.type _start, @function
+// .type _start, @function
 
 
 _start:
-	mov $stackTop, %esp
-	call kernel_entry
-
-	cli
+	MOV $stackTop, %esp
+	CALL kernel_entry
+	CLI
 
 hltLoop:
+	HLT
+	JMP hltLoop
 
-	hlt
-	jmp hltLoop
-
-.size _start, . - _start
+// .size _start, . - _start
