@@ -1,1 +1,1 @@
-as -target x86_64-pc-none-gnu ../src/boot.s
+ as -target aarch64-linux-gnu ../src/boot.s

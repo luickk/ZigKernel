@@ -1,30 +1,20 @@
-.set MAGIC,    0x1BADB002
-.set FLAGS,    0
-.set CHECKSUM, -(MAGIC + FLAGS)
-.section .multiboot
+.section ".text.boot"
 
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
-
-stackBottom:
-
-.skip 1024
-
-stackTop:
-
-.section .text
-.global _start
-// .type _start, @function
-
-
+.globl _start
 _start:
-	MOV $stackTop, %esp
-	CALL kernel_entry
-	CLI
+    mrs    x0, mpidr_el1        
+    and    x0, x0,#0xFF        // Check processor id
+    cbz    x0, master        // Hang for all non-primary CPU
+    b    proc_hang
 
-hltLoop:
-	HLT
-	JMP hltLoop
+proc_hang: 
+    b proc_hang
 
-// .size _start, . - _start
+master:
+    adr    x0, bss_begin
+    adr    x1, bss_end
+    sub    x1, x1, x0
+    bl     memzero
+
+    mov    sp, 4194304
+    bl    kernel_main

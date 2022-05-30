@@ -4,13 +4,16 @@ const os = @import("std").os;
 
 pub fn build(b: *std.build.Builder) void {
     const kernel_source = b.addObject("kernel", "src/kernel.zig");
-    const kernel_boot = b.addObject("boot", "src/boot.s");
+    const kernel_boot = b.addObject("boot", "src/boot.S");
     kernel_source.setBuildMode(b.standardReleaseOptions());
     kernel_boot.setBuildMode(b.standardReleaseOptions());
-    var build_target = .{ .cpu_arch = std.Target.Cpu.Arch.x86_64, .os_tag = std.Target.Os.Tag.linux };
 
-    kernel_source.setTarget(build_target);
-    kernel_boot.setTarget(build_target);
+    // b.installArtifact(kernel_source);
+    // b.installArtifact(kernel_boot);
+
+    // var build_target = .{ .cpu_arch = std.Target.Cpu.Arch.x86_64, .os_tag = std.Target.Os.Tag.e };
+    // kernel_source.setTarget(build_target);
+    // kernel_boot.setTarget(build_target);
 
     // building boot elf32 assembly
     // build_assembler_boot = b.addSystemCommand(&[_][]const u8{ "as", "-target", "x86_64-pc-none-gnu", "src/boot.s" });
