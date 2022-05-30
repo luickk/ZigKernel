@@ -1,2 +1,3 @@
-zig build-obj -O ReleaseSmall -target aarch64-linux-gnu ../src/kernel.zig
-as -target aarch64-linux-gnu ../src/boot.s
+zig build-obj -femit-bin=build/kernel.o -O ReleaseSmall ../src/kernel.zig 
+as ../src/boot.s -o build/boot.o
+ld -T ../src/linker.ld build/boot.o build/kernel.o -o os.bin
