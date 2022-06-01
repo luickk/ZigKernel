@@ -13,6 +13,7 @@ fn kprint(print_string: []const u8) void {
     }
 }
 
-export fn kernel_main() void {
+export fn kernel_main() callconv(.Naked) noreturn {
     kprint("hello world");
+    while (true) {}
 }
