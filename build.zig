@@ -13,4 +13,13 @@ pub fn build(b: *std.build.Builder) void {
     exe.addCSourceFile("src/boot.s", &.{});
 
     exe.install();
+
+    const start_emulation = b.addSystemCommand(&.{ "qemu-system-aarch64", "-machine", "virt", "-cpu", "cortex-a57", "-kernel", "zig-out/bin/kernel", "-nographic" });
+    start_emulation.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        start_emulation.addArgs(args);
+    }
+
+    const run_step = b.step("run", "emulate the kernel");
+    run_step.dependOn(&start_emulation.step);
 }
