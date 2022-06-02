@@ -14,6 +14,11 @@ To build the kernel just run </br>
 `zig build` and to emulate it,</br>
 `zig build run`
 
+
+## Implementing the Cirrus CLGD 54xx VGA driver bare metal (for qemu) // in proccess
+
+The driver code can be found [here](https://github.com/torvalds/linux/blob/master/drivers/video/fbdev/cirrusfb.c) and is based on the old deprecated(less complex) linux kernel fbdev frame buffer driver.
+
 ## Manual Build Scripts (deprecated)
 
 ### Dependencies
