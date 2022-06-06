@@ -5,9 +5,12 @@ const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 const ramFb = @import("ramfb.zig");
 
 export fn kernel_main() callconv(.Naked) noreturn {
-    serial.kprint("start \n");
+    serial.kprint("kernel startup \n");
     // get address of external linker script variable which marks stack-top and heap-start
-    const heap_start: *anyopaque = @as(*anyopaque, @extern(?*u8, .{ .name = "_stack_top" }) orelse unreachable);
+    const heap_start: *anyopaque = @as(*anyopaque, @extern(?*u8, .{ .name = "_stack_top" }) orelse {
+        serial.kprint("error reading _stack_top label\n");
+        unreachable;
+    });
 
     // var fb = FbWriter.init();
     // // fb.fb_buffer.ptr = @intToPtr([*]u16, 0x09020000);
@@ -26,10 +29,14 @@ export fn kernel_main() callconv(.Naked) noreturn {
 
     var allocator = WaterMarkAllocator.init(heap_start, 4000);
 
-    _ = allocator.malloc(100) catch unreachable;
+    // _ = allocator.malloc(100) catch unreachable;
 
-    ramFb.ramfb_setup(&allocator) catch unreachable;
+    ramFb.ramfb_setup(&allocator) catch |err| {
+        serial.kprint("err while ramfb setup, code:");
+        serial.kprint_err(err);
+        serial.kprint(" \n");
+    };
 
-    serial.kprint("end \n");
+    serial.kprint("loop \n");
     while (true) {}
 }

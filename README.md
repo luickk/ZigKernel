@@ -19,9 +19,13 @@ To build the kernel just run </br>
 
 The driver code can be found [here](https://github.com/torvalds/linux/blob/master/drivers/video/fbdev/cirrusfb.c) and is based on the old deprecated(less complex) linux kernel fbdev frame buffer driver.
 
-## Ramfb
+## Ramfb (simple virtual display)
 
-I fully implemented a friend buffer but there is no documentation or any information about the ramfb base address or mmio. In 'build_scripts/dtb.text' is the binary tree which is usually send to the bootloader(and is kept somewhere in dram) but there isn't any information about the ramfb addresses either.
+Initing display with the qemu DMA interface, which must be supported by the qemu version(not perfoming any checks).
+
+Porting qemu initialization from [here](https://github.com/coreboot/seabios/blob/master/vgasrc/ramfb.c). Ramfb has to be first inited via. the dma interface(simplifying "addon" to the fw_cfg). I'm porting the code from the x86 seabios since there is no other source for aarch yet.
+
+Arm uses MMIO instead of (x86)in/out instructions, which is why neither addresses nor certain instructions line up.
 
 ## Manual Build Scripts (deprecated)
 

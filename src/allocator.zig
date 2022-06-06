@@ -3,6 +3,8 @@ const AllocationError = error{
     MaxFree,
 };
 
+// todo => aliginment
+// todo => paging
 pub const WaterMarkAllocator = struct {
     const max_frees = 100;
     alloc_base: *anyopaque,

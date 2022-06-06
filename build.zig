@@ -22,7 +22,7 @@ pub fn build(b: *std.build.Builder) void {
         start_emulation_serial.addArgs(args);
     }
 
-    const start_emulation_ramfb = b.addSystemCommand(&.{ "qemu-system-aarch64", "-machine", "virt", "-cpu", "cortex-a57", "-kernel", "zig-out/bin/kernel", "-device", "ramfb" });
+    const start_emulation_ramfb = b.addSystemCommand(&.{ "qemu-system-aarch64", "-machine", "virt", "-cpu", "cortex-a57", "-kernel", "zig-out/bin/kernel", "-device", "ramfb", "-serial", "stdio" });
     start_emulation_ramfb.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
         start_emulation_ramfb.addArgs(args);

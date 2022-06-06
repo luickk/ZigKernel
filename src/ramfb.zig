@@ -23,7 +23,7 @@ const drm_format_rgbB888 = fourcc_code('R', 'G', '2', '4');
 const drm_format_xrgb8888 = fourcc_code('X', 'R', '2', '4');
 
 pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
-    const select: u32 = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
+    const select: u16 = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
     var fb = try alloc.malloc(fb_size);
 
     var cfg = qemu_dma.QemuRAMFBCfg{

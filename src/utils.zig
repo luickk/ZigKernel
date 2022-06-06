@@ -10,3 +10,7 @@ pub fn str_cmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: 
     }
     return true;
 }
+
+pub fn u16_to_u8_arr(inp: u16) [2]u8 {
+    return [2]u8{ @truncate(u8, (inp >> 8) & 0xFF), @truncate(u8, inp & 0xFF) };
+}
