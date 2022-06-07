@@ -25,18 +25,17 @@ export fn kernel_main() callconv(.Naked) noreturn {
     // var p = "dd";
     // if (utils.str_cmp(l, p, l.len, p.len)) {
     //     serial.kprint("same \n");
-    // }
-
+    // }kprint_ui
     var allocator = WaterMarkAllocator.init(heap_start, 4000);
 
-    // _ = allocator.malloc(100) catch unreachable;
+    // // _ = allocator.malloc(100) catch unreachable;
 
     ramFb.ramfb_setup(&allocator) catch |err| {
-        serial.kprint("err while ramfb setup, code:");
-        serial.kprint_err(err);
-        serial.kprint(" \n");
+        serial.kprint("err while ramfb setup, code: ");
+        serial.kprint_ui(@errorToInt(err));
+        serial.kprint("\n");
     };
 
-    serial.kprint("loop \n");
+    // serial.kprint("loop \n");
     while (true) {}
 }

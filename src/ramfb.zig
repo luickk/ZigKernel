@@ -1,5 +1,6 @@
 const allocator = @import("allocator.zig");
 const qemu_dma = @import("qemu_dma.zig");
+const serial = @import("serial.zig");
 const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 
 const fb_width = 1024;
@@ -24,6 +25,7 @@ const drm_format_xrgb8888 = fourcc_code('X', 'R', '2', '4');
 
 pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
     const select: u16 = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
+    serial.kprint("qemu find file ran \n");
     var fb = try alloc.malloc(fb_size);
 
     var cfg = qemu_dma.QemuRAMFBCfg{

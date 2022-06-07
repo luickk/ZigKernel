@@ -33,4 +33,8 @@ pub fn build(b: *std.build.Builder) void {
 
     const run_step_serial = b.step("emulate-serial", "emulate the kernel with no graphics and output uart to console");
     run_step_serial.dependOn(&start_emulation_serial.step);
+
+    const test_obj_step = b.addTest("src/utils.zig");
+    const test_step = b.step("test", "Run tests for testable kernel parts");
+    test_step.dependOn(&test_obj_step.step);
 }
