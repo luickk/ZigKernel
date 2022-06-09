@@ -1,14 +1,15 @@
 const utils = @import("utils.zig");
-const serial = @import("serial.zig");
 
-// probably high not low
-const qemu_cfg_dma_base_addr = 0x09020000;
-
-const qemu_cfg_dma_base_dma_addr = 0x10;
+const qemu_cfg_dma_base_dma_addr: u64 = 0x9020000 + 16;
 
 const qemu_cfg_dma_ctl_error = 0x01;
-
 const qemu_cfg_file_dir = 0x19;
+
+// static vars required because of mmio writes to those addresses,
+// could, if not inited static corrupt the stack
+var dma_acc: QemuCfgDmaAccess = undefined;
+var count: u32 = undefined;
+var qfile: QemuCfgFile = undefined;
 
 const QemuCfgDmaAccess = packed struct {
     control: u32,
@@ -45,9 +46,7 @@ fn barrier() void {
 }
 
 fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
-    serial.kprint("control field:");
-    serial.kprint_ui(@byteSwap(u32, control));
-    var dma_acc: QemuCfgDmaAccess = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
+    dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
     barrier();
     // writing to most significant with offset 0 since it's aarch*64*
     const base_addr_upper = @intToPtr(*u64, qemu_cfg_dma_base_dma_addr);
@@ -55,31 +54,18 @@ fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
 
     // rather ugly cast to volatile with off alignment (because of packed struct) required
     const dma_acc_ctrl_check = @ptrCast(*align(1) volatile u32, &dma_acc.control);
-    while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {
-        // serial.kprint("control field:");
-        // serial.kprint_ui(@byteSwap(u32, dma_acc_ctrl_check.*));
-        // serial.kprint("\n");
-    }
+    while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {}
 }
 
-pub fn qemu_cfg_find_file() ?u16 {
-    var count: u32 = 0;
-
-    serial.kprint("looking entry up \n");
+pub inline fn qemu_cfg_find_file() ?u16 {
+    count = 0;
     qemu_cfg_read_entry(&count, qemu_cfg_file_dir, @sizeOf(u32));
-    serial.kprint("conv\n");
     count = @byteSwap(u32, count);
 
-    serial.kprint("done waiting \n");
-    serial.kprint("test: \n");
-    serial.kprint_ui(count);
-    serial.kprint(" \n");
-
-    var e: u16 = 0;
+    var e: u32 = 0;
     while (e < count) : (e += 1) {
-        var qfile: QemuCfgFile = undefined;
         qemu_cfg_read(&qfile, @sizeOf(QemuCfgFile));
-        if (utils.str_cmp(&qfile.name, "etc/ramfb", 10, 10)) {
+        if (utils.memcmp_str(&qfile.name, "etc/ramfb", 10)) {
             return @byteSwap(u16, qfile.select);
         }
     }

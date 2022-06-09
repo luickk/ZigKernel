@@ -15,8 +15,8 @@ pub fn kprint(print_string: []const u8) void {
     }
 }
 
-// pub fn kprint_ui(num: u64) void {
-//     var ret = utils.uitoa(num);
+// pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
+//     var ret = utils.uitoa(num, print_style);
 
 //     var j: usize = 0;
 //     while (j < ret.len) : (j += 1) {
@@ -24,8 +24,7 @@ pub fn kprint(print_string: []const u8) void {
 //     }
 // }
 
-// // todo => use utils.uitoa -- cant yet bc zig struct return borken
-pub fn kprint_ui(num: u64) void {
+pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
     var str = [_]u8{0} ** 20;
 
     if (num == 0) {
@@ -37,7 +36,7 @@ pub fn kprint_ui(num: u64) void {
     var i: u8 = 0;
     var num_i = num;
     while (num_i != 0) {
-        rem = @mod(num_i, 2);
+        rem = @mod(num_i, @enumToInt(print_style));
         if (rem > 9) {
             str[i] = @truncate(u8, (rem - 10) + 'a');
         } else {
@@ -45,7 +44,7 @@ pub fn kprint_ui(num: u64) void {
         }
         i += 1;
 
-        num_i = num_i / 2;
+        num_i = num_i / @enumToInt(print_style);
     }
     utils.reverse_string(&str, i);
 

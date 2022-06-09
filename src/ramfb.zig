@@ -1,6 +1,8 @@
 const allocator = @import("allocator.zig");
 const qemu_dma = @import("qemu_dma.zig");
 const serial = @import("serial.zig");
+const utils = @import("utils.zig");
+
 const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 
 const fb_width = 1024;
@@ -8,9 +10,11 @@ const fb_height = 768;
 
 const fb_bpp = 4;
 const fb_stride = fb_bpp * fb_width;
-const fb_size = fb_stride * fb_height;
+const fb_size: u64 = fb_stride * fb_height;
 
 const RamFbError = error{RamfbFileNotFound};
+
+var ramfb_cfg: qemu_dma.QemuRAMFBCfg = undefined;
 
 fn fourcc_code(a: u32, b: u32, c: u32, d: u32) u64 {
     return (a | (b << 8) | (c << 16) | (d << 24));
@@ -25,10 +29,10 @@ const drm_format_xrgb8888 = fourcc_code('X', 'R', '2', '4');
 
 pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
     const select: u16 = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
-    serial.kprint("qemu find file ran \n");
     var fb = try alloc.malloc(fb_size);
+    serial.kprint("after malloc \n");
 
-    var cfg = qemu_dma.QemuRAMFBCfg{
+    ramfb_cfg = qemu_dma.QemuRAMFBCfg{
         .addr = @ptrToInt(fb),
         .fourcc = drm_format_xrgb8888,
         .flags = 0,
@@ -36,5 +40,6 @@ pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
         .height = fb_height,
         .stride = fb_stride,
     };
-    qemu_dma.qemu_cfg_write_entry(@ptrCast(*anyopaque, &cfg), select, @sizeOf(qemu_dma.QemuRAMFBCfg));
+    serial.kprint("before write \n");
+    qemu_dma.qemu_cfg_write_entry(@ptrCast(*anyopaque, &ramfb_cfg), select, @sizeOf(qemu_dma.QemuRAMFBCfg));
 }
