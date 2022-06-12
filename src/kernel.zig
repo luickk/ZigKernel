@@ -12,9 +12,11 @@ export fn kernel_main() callconv(.Naked) noreturn {
         unreachable;
     });
 
+    serial.kprintf("test: {u} \n", .{100}) catch unreachable;
+
     var allocator = WaterMarkAllocator.init(heap_start, 5000000);
 
-    // _ = allocator.malloc(100) catch unreachable;
+    _ = allocator.malloc(100) catch unreachable;
 
     ramFb.ramfb_setup(&allocator) catch |err| {
         serial.kprint("err while ramfb setup, code: ");

@@ -18,16 +18,16 @@ var ramfb_cfg: qemu_dma.QemuRAMFBCfg = undefined;
 var fb: *anyopaque = undefined;
 var f: u32 = undefined;
 
-fn fourcc_code(a: u32, b: u32, c: u32, d: u32) u64 {
+fn fourcc_code(a: u32, b: u32, c: u32, d: u32) u32 {
     return (a | (b << 8) | (c << 16) | (d << 24));
 }
 
 // [15:0] R:G:B 5:6:5 little endian
-const drm_format_rgb565 = fourcc_code('R', 'G', '1', '6');
+const drm_format_rgb565: u32 = fourcc_code('R', 'G', '1', '6');
 // [23:0] R:G:B little endian
-const drm_format_rgbB888 = fourcc_code('R', 'G', '2', '4');
+const drm_format_rgbB888: u32 = fourcc_code('R', 'G', '2', '4');
 // [31:0] x:R:G:B 8:8:8:8 little endian
-const drm_format_xrgb8888 = fourcc_code('X', 'R', '2', '4');
+const drm_format_xrgb8888: u32 = fourcc_code('X', 'R', '2', '4');
 
 pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
     const select = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
@@ -41,6 +41,7 @@ pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
         .height = @byteSwap(u32, fb_height),
         .stride = @byteSwap(u32, fb_stride),
     };
+    serial.kprint("after init \n");
     qemu_dma.qemu_cfg_write_entry(&ramfb_cfg, select, @sizeOf(qemu_dma.QemuRAMFBCfg));
     serial.kprint("after write \n");
 }

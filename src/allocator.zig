@@ -36,3 +36,8 @@ pub const WaterMarkAllocator = struct {
         return .{ .alloc_base = @ptrCast([*]u8, base), .alloc_bottom = 0, .alloc_top = alloc_size, .currently_free = 0, .freed_zones = undefined };
     }
 };
+
+// pub fn test_allocator(alloc: *WaterMarkAllocator) {
+//     const str: [*]u8 = alloc.malloc(100);
+
+// }
