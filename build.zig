@@ -28,8 +28,17 @@ pub fn build(b: *std.build.Builder) void {
         start_emulation_ramfb.addArgs(args);
     }
 
+    const start_emulation_ramfb_gdb = b.addSystemCommand(&.{ "qemu-system-aarch64", "-s", "-S", "-machine", "virt", "-cpu", "cortex-a57", "-kernel", "zig-out/bin/kernel", "-device", "ramfb", "-serial", "stdio" });
+    start_emulation_ramfb_gdb.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        start_emulation_ramfb_gdb.addArgs(args);
+    }
+
     const run_step_ramfb = b.step("emulate-ramfb", "emulate the kernel with graphics and ramfb interface");
     run_step_ramfb.dependOn(&start_emulation_ramfb.step);
+
+    const run_step_ramfb_gdb = b.step("emulate-ramfb-gdb", "emulate the kernel with graphics and ramfb interface and a gdb server");
+    run_step_ramfb_gdb.dependOn(&start_emulation_ramfb_gdb.step);
 
     const run_step_serial = b.step("emulate-serial", "emulate the kernel with no graphics and output uart to console");
     run_step_serial.dependOn(&start_emulation_serial.step);

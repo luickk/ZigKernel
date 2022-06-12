@@ -1,20 +1,22 @@
 const allocator = @import("allocator.zig");
 const qemu_dma = @import("qemu_dma.zig");
-const serial = @import("serial.zig");
 const utils = @import("utils.zig");
+const serial = @import("serial.zig");
 
 const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 
-const fb_width = 1024;
-const fb_height = 768;
+const fb_width: u32 = 1024;
+const fb_height: u32 = 768;
 
-const fb_bpp = 4;
-const fb_stride = fb_bpp * fb_width;
+const fb_bpp: u32 = 4;
+const fb_stride: u32 = fb_bpp * fb_width;
 const fb_size: u64 = fb_stride * fb_height;
 
 const RamFbError = error{RamfbFileNotFound};
 
 var ramfb_cfg: qemu_dma.QemuRAMFBCfg = undefined;
+var fb: *anyopaque = undefined;
+var f: u32 = undefined;
 
 fn fourcc_code(a: u32, b: u32, c: u32, d: u32) u64 {
     return (a | (b << 8) | (c << 16) | (d << 24));
@@ -28,18 +30,17 @@ const drm_format_rgbB888 = fourcc_code('R', 'G', '2', '4');
 const drm_format_xrgb8888 = fourcc_code('X', 'R', '2', '4');
 
 pub fn ramfb_setup(alloc: *WaterMarkAllocator) !void {
-    const select: u16 = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
-    var fb = try alloc.malloc(fb_size);
-    serial.kprint("after malloc \n");
-
-    ramfb_cfg = qemu_dma.QemuRAMFBCfg{
-        .addr = @ptrToInt(fb),
-        .fourcc = drm_format_xrgb8888,
+    const select = qemu_dma.qemu_cfg_find_file() orelse return RamFbError.RamfbFileNotFound;
+    serial.kprint("before  malloc \n");
+    fb = try alloc.malloc(fb_size);
+    ramfb_cfg = .{
+        .addr = @byteSwap(u64, @ptrToInt(fb)),
+        .fourcc = @byteSwap(u32, drm_format_xrgb8888),
         .flags = 0,
-        .width = fb_width,
-        .height = fb_height,
-        .stride = fb_stride,
+        .width = @byteSwap(u32, fb_width),
+        .height = @byteSwap(u32, fb_height),
+        .stride = @byteSwap(u32, fb_stride),
     };
-    serial.kprint("before write \n");
-    qemu_dma.qemu_cfg_write_entry(@ptrCast(*anyopaque, &ramfb_cfg), select, @sizeOf(qemu_dma.QemuRAMFBCfg));
+    qemu_dma.qemu_cfg_write_entry(&ramfb_cfg, select, @sizeOf(qemu_dma.QemuRAMFBCfg));
+    serial.kprint("after write \n");
 }

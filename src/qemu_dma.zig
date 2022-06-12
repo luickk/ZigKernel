@@ -1,4 +1,5 @@
 const utils = @import("utils.zig");
+const serial = @import("serial.zig");
 
 const qemu_cfg_dma_base_dma_addr: u64 = 0x9020000 + 16;
 
@@ -57,7 +58,7 @@ fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
     while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {}
 }
 
-pub inline fn qemu_cfg_find_file() ?u16 {
+pub fn qemu_cfg_find_file() ?u32 {
     count = 0;
     qemu_cfg_read_entry(&count, qemu_cfg_file_dir, @sizeOf(u32));
     count = @byteSwap(u32, count);
@@ -66,7 +67,7 @@ pub inline fn qemu_cfg_find_file() ?u16 {
     while (e < count) : (e += 1) {
         qemu_cfg_read(&qfile, @sizeOf(QemuCfgFile));
         if (utils.memcmp_str(&qfile.name, "etc/ramfb", 10)) {
-            return @byteSwap(u16, qfile.select);
+            return @byteSwap(u32, qfile.select);
         }
     }
     return null;
