@@ -12,13 +12,13 @@ var dma_acc: QemuCfgDmaAccess = undefined;
 var count: u32 = undefined;
 var qfile: QemuCfgFile = undefined;
 
-const QemuCfgDmaAccess = packed struct {
+pub const QemuCfgDmaAccess = packed struct {
     control: u32,
     len: u32,
     address: u64,
 };
 
-const QemuCfgDmaControlBits = enum(u8) {
+pub const QemuCfgDmaControlBits = enum(u8) {
     qemu_cfg_dma_ctl_error = 0x01,
     qemu_cfg_dma_ctl_read = 0x02,
     qemu_cfg_dma_ctl_skip = 0x04,
@@ -26,7 +26,7 @@ const QemuCfgDmaControlBits = enum(u8) {
     qemu_cfg_dma_ctl_write = 0x10,
 };
 
-pub const QemuRAMFBCfg = struct {
+pub const QemuRAMFBCfg = extern struct {
     addr: u64,
     fourcc: u32,
     flags: u32,
@@ -42,13 +42,13 @@ const QemuCfgFile = struct {
     name: [56]u8,
 };
 
-fn barrier() void {
+pub fn barrier() void {
     asm volatile ("ISB");
 }
 
 fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
     dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
-    barrier();
+    // barrier();
     // writing to most significant with offset 0 since it's aarch*64*
     const base_addr_upper = @intToPtr(*u64, qemu_cfg_dma_base_dma_addr);
     base_addr_upper.* = @byteSwap(u64, @ptrToInt(&dma_acc));

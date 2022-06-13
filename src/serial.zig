@@ -4,18 +4,19 @@ const mmio_uart = @intToPtr(*volatile u8, 0x09000000);
 
 const KprintfParsingState = enum { filling_val, printing_ch };
 
-const KprintfErr = error{
+pub const KprintfErr = error{
     TypeNotFound,
     TypeMissMatch,
+    UnusedArgs,
+    NotEnoughArgs,
 };
 
 fn put_char(ch: u8) void {
     mmio_uart.* = ch;
 }
 
-pub fn kprint(print_string: []const u8) void {
+fn kprint(print_string: []const u8) void {
     for (print_string) |ch| {
-        if (ch == 0) {}
         put_char(ch);
     }
 }
@@ -38,11 +39,20 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
                         if (print_string[i + 2] != '}') {
                             return KprintfErr.TypeNotFound;
                         }
-
-                        // if (@typeInfo(@TypeOf(args[i_args_parsed])) != .Int) {
-                        //     return KprintfErr.TypeMissMatch;
-                        // }
+                        if (i_args_parsed >= args.len) {
+                            return KprintfErr.NotEnoughArgs;
+                        }
                         kprint_ui(args[i_args_parsed], utils.PrintStyle.string);
+                        i_args_parsed += 1;
+                    },
+                    's' => {
+                        if (print_string[i + 2] != '}') {
+                            return KprintfErr.TypeNotFound;
+                        }
+                        if (i_args_parsed >= args.len) {
+                            return KprintfErr.NotEnoughArgs;
+                        }
+                        kprint(args[i_args_parsed]);
                         i_args_parsed += 1;
                     },
                     else => {
@@ -56,17 +66,20 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
             0 => break,
         }
     }
+    if (i_args_parsed != args.len) {
+        return KprintfErr.UnusedArgs;
+    }
 }
 
 // pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
 //     var ret = utils.uitoa(num, print_style);
-
 //     var j: usize = 0;
 //     while (j < ret.len) : (j += 1) {
 //         put_char(ret.arr[j]);
 //     }
 // }
 
+// -- cannot use existing functions(commented fn above) because of Zig Aarch64 issue described here https://github.com/ziglang/zig/issues/11859
 pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
     var str = [_]u8{0} ** 20;
 

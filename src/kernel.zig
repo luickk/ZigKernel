@@ -8,20 +8,27 @@ const qemu_dma = @import("qemu_dma.zig");
 export fn kernel_main() callconv(.Naked) noreturn {
     // get address of external linker script variable which marks stack-top and heap-start
     const heap_start: *anyopaque = @as(*anyopaque, @extern(?*u8, .{ .name = "_stack_top" }) orelse {
-        serial.kprint("error reading _stack_top label\n");
+        serial.kprintf("error reading _stack_top label\n", .{}) catch unreachable;
         unreachable;
     });
 
-    serial.kprintf("test: {u} \n", .{100}) catch unreachable;
+    serial.kprintf("printf test int: {u} \n", .{100}) catch unreachable;
+    serial.kprintf("printf test string: {s} \n", .{"testInsert"}) catch unreachable;
+    serial.kprintf("{s}{s}", .{""}) catch |err| {
+        if (err == serial.KprintfErr.NotEnoughArgs) {
+            serial.kprintf("too few args\n", .{@errorToInt(err)}) catch unreachable;
+        }
+    };
+    serial.kprintf("{s}", .{ "", "one too much" }) catch |err| {
+        if (err == serial.KprintfErr.UnusedArgs) {
+            serial.kprintf("unused args\n", .{@errorToInt(err)}) catch unreachable;
+        }
+    };
 
     var allocator = WaterMarkAllocator.init(heap_start, 5000000);
 
-    _ = allocator.malloc(100) catch unreachable;
-
     ramFb.ramfb_setup(&allocator) catch |err| {
-        serial.kprint("err while ramfb setup, code: ");
-        serial.kprint_ui(@errorToInt(err), utils.PrintStyle.string);
-        serial.kprint("\n");
+        serial.kprintf("error while setting up ramfb: {u} \n", .{@errorToInt(err)}) catch unreachable;
     };
 
     while (true) {}
