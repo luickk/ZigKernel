@@ -11,6 +11,9 @@ pub fn build(b: *std.build.Builder) void {
 
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
 
+    exe.addIncludeDir("src/c_workaround");
+    exe.addCSourceFile("src/c_workaround/qemu_dma_write_workaround.c", &[_][]const u8{"-std=c99"});
+    // exe.linkLibC();
     exe.addObjectFile("src/kernel.zig");
     exe.addCSourceFile("src/boot.s", &.{});
 
