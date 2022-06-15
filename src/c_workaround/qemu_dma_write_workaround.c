@@ -1,21 +1,18 @@
 #include "qemu_dma_write_workaround.h"
 
 void qemu_cfg_dma_transfer(void *address, u32 length, u32 control) {
-    QemuCfgDmaAccess access;
+    QemuCfgDmaAccess access = { .address = __builtin_bswap64((u64)address), .length = __builtin_bswap32(length), .control = __builtin_bswap32(control) };
 
     if (length == 0) {
         return;
     }
 
-    access.address = __builtin_bswap64((u64)address);
-    access.length = __builtin_bswap32(length);
-    access.control = __builtin_bswap32(control);
-
-    __asm__("ISB");
+    // __asm__("ISB");
 
 	// *((u64*)BASE_ADDR) = __builtin_bswap64((u64)&access);
-    volatile u64 *mmio_w = (volatile u64*)BASE_ADDR;
-    *mmio_w = __builtin_bswap32(&access);
+    uint64_t *mmio_w = (uint64_t*)BASE_ADDR;
+    // u64 addr_in_mmio = *mmio_w; 
+    *mmio_w = 500;
 
     while(__builtin_bswap32(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {}
 }

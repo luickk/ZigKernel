@@ -1,0 +1,1 @@
+gcc -T ../linker.ld ../boot.s qemu_dma_write_workaround.c  gcc_kernel.c -o kernel.elf -nostdlib
