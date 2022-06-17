@@ -1,7 +1,7 @@
 const utils = @import("utils.zig");
 const serial = @import("serial.zig");
 
-const qemu_cfg_dma_base_dma_addr: u64 = 0x9020000 + 16;
+const qemu_cfg_dma_base_dma_addr: u64 = 0x9020010;
 
 const qemu_cfg_dma_ctl_error = 0x01;
 const qemu_cfg_file_dir = 0x19;
@@ -52,10 +52,11 @@ fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
     // writing to most significant with offset 0 since it's aarch*64*
     const base_addr_upper = @intToPtr(*u64, qemu_cfg_dma_base_dma_addr);
     base_addr_upper.* = @byteSwap(u64, @ptrToInt(&dma_acc));
-
+    serial.kprintf("wrote\n", .{}) catch unreachable;
     // rather ugly cast to volatile with off alignment (because of packed struct) required
     const dma_acc_ctrl_check = @ptrCast(*align(1) volatile u32, &dma_acc.control);
     while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {}
+    serial.kprintf("passed \n", .{}) catch unreachable;
 }
 
 pub fn qemu_cfg_find_file() ?u32 {

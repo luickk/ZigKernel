@@ -12,19 +12,6 @@ export fn kernel_main() callconv(.Naked) noreturn {
         unreachable;
     });
 
-    serial.kprintf("printf test int: {u} \n", .{100}) catch unreachable;
-    serial.kprintf("printf test string: {s} \n", .{"testInsert"}) catch unreachable;
-    serial.kprintf("{s}{s}", .{""}) catch |err| {
-        if (err == serial.KprintfErr.NotEnoughArgs) {
-            serial.kprintf("too few args\n", .{@errorToInt(err)}) catch unreachable;
-        }
-    };
-    serial.kprintf("{s}", .{ "", "one too much" }) catch |err| {
-        if (err == serial.KprintfErr.UnusedArgs) {
-            serial.kprintf("unused args\n", .{@errorToInt(err)}) catch unreachable;
-        }
-    };
-
     var allocator = WaterMarkAllocator.init(heap_start, 5000000);
 
     ramFb.ramfb_setup(&allocator) catch |err| {

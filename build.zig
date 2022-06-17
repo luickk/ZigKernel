@@ -7,13 +7,9 @@ pub fn build(b: *std.build.Builder) void {
     // zig build solution (not working)
     const exe = b.addExecutable("kernel", null);
     exe.setTarget(.{ .cpu_arch = std.Target.Cpu.Arch.aarch64, .os_tag = std.Target.Os.Tag.freestanding });
-    exe.setBuildMode(std.builtin.Mode.ReleaseSmall);
+    exe.setBuildMode(std.builtin.Mode.Debug);
 
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
-
-    exe.addIncludeDir("src/c_workaround");
-    exe.addCSourceFile("src/c_workaround/qemu_dma_write_workaround.c", &[_][]const u8{"-std=c99"});
-
     exe.addObjectFile("src/kernel.zig");
     exe.addCSourceFile("src/boot.s", &.{});
 
