@@ -26,7 +26,7 @@ pub const QemuCfgDmaControlBits = enum(u8) {
     qemu_cfg_dma_ctl_write = 0x10,
 };
 
-pub const QemuRAMFBCfg = extern struct {
+pub const QemuRAMFBCfg = packed struct {
     addr: u64,
     fourcc: u32,
     flags: u32,
@@ -48,15 +48,16 @@ pub fn barrier() void {
 
 fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
     dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
-    // barrier();
+
+    barrier();
+
     // writing to most significant with offset 0 since it's aarch*64*
     const base_addr_upper = @intToPtr(*u64, qemu_cfg_dma_base_dma_addr);
     base_addr_upper.* = @byteSwap(u64, @ptrToInt(&dma_acc));
-    serial.kprintf("wrote\n", .{}) catch unreachable;
+
     // rather ugly cast to volatile with off alignment (because of packed struct) required
     const dma_acc_ctrl_check = @ptrCast(*align(1) volatile u32, &dma_acc.control);
     while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {}
-    serial.kprintf("passed \n", .{}) catch unreachable;
 }
 
 pub fn qemu_cfg_find_file() ?u32 {
@@ -67,7 +68,7 @@ pub fn qemu_cfg_find_file() ?u32 {
     var e: u32 = 0;
     while (e < count) : (e += 1) {
         qemu_cfg_read(&qfile, @sizeOf(QemuCfgFile));
-        if (utils.memcmp_str(&qfile.name, "etc/ramfb", 10)) {
+        if (utils.memcmp_str(&qfile.name, "etc/ramfb", 9)) {
             return @byteSwap(u32, qfile.select);
         }
     }

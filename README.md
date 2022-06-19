@@ -3,6 +3,16 @@ Very basic aarch64 kernel written in Zig.
 
 Currently based on https://wiki.osdev.org/QEMU_AArch64_Virt_Bare_Bones
 
+# Status
+
+As stated by Zig, it is by far not done and although the language itself is declared as stable, a kernel is an edge case which is apperantly not completely bug free (yet).
+
+I started this project with the goal of writing a small kernel (with userspace) in zig. I then had the idea to first implement a driver for the qemu ramfb interface in zig for this kernel.
+Whilst doing this I discovered numerous (or few very elementary) flaws in Zig, which do not let me continue this project. 
+I instead implemented the driver in C: https://github.com/luickk/qemu-ramfb-aarch64-driver \n and also filed an issue with a complete description of the observed behaviour and hypothesis: https://github.com/ziglang/zig/issues/11859 .
+
+As up to now, depending on the build mode (more on that in the gh issue), the kernel ether runs but doesn't properly write to mmio or it hangs (jumps to an interrupt handler) but writes to mmio berforehand. The actual behaviour is way more complex and weird and can be read in the filed gh issue. 
+
 ## Setup
 
 ### Dependencies
@@ -14,18 +24,9 @@ To build the kernel just run </br>
 `zig build` and to emulate it,</br>
 `zig build emulate-serial`
 
-
-## Implementing the Cirrus CLGD 54xx VGA driver bare metal (for qemu) // in proccess
-
-The driver code can be found [here](https://github.com/torvalds/linux/blob/master/drivers/video/fbdev/cirrusfb.c) and is based on the old deprecated(less complex) linux kernel fbdev frame buffer driver.
-
 ## Ramfb (simple virtual display)
 
-Initing display with the qemu DMA interface, which must be supported by the qemu version(not perfoming any checks).
-
-Porting qemu initialization from [here](https://github.com/coreboot/seabios/blob/master/vgasrc/ramfb.c). Ramfb has to be first inited via. the dma interface(simplifying "addon" to the fw_cfg). I'm porting the code from the x86 seabios since there is no other source for aarch yet.
-
-Arm uses MMIO instead of (x86)in/out instructions, which is why neither addresses nor certain instructions line up.
+The driver can be found [here](https://github.com/luickk/qemu-ramfb-aarch64-driver) (C implementation)
 
 ## Manual Build Scripts (deprecated)
 

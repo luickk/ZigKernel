@@ -14,7 +14,7 @@ pub const WaterMarkAllocator = struct {
 
     currently_free: usize,
     // todo => dynamic
-    freed_zones: [max_frees]struct { freed_base: *anyopaque, freed_size: usize },
+    // freed_zones: [max_frees]struct { freed_base: *anyopaque, freed_size: usize },
 
     pub fn malloc(self: *WaterMarkAllocator, size: usize) !*anyopaque {
         if (self.alloc_bottom + size > self.alloc_top) {
@@ -33,7 +33,7 @@ pub const WaterMarkAllocator = struct {
         self.currently_free += 1;
     }
     pub fn init(base: *anyopaque, alloc_size: usize) WaterMarkAllocator {
-        return .{ .alloc_base = @ptrCast([*]u8, base), .alloc_bottom = 0, .alloc_top = alloc_size, .currently_free = 0, .freed_zones = undefined };
+        return .{ .alloc_base = @ptrCast([*]u8, base), .alloc_bottom = 0, .alloc_top = alloc_size, .currently_free = 0 };
     }
 };
 

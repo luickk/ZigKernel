@@ -20,6 +20,9 @@ pub fn str_cmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: 
 }
 
 pub fn memcmp_str(s1: [*]const u8, s2: [*]const u8, n: usize) bool {
+    if (s1 == undefined or s2 == undefined) {
+        return false;
+    }
     var n_i = n;
     while (n_i > 0) : (n_i -= 1) {
         if (s1[n] - s2[n] > 0) {
