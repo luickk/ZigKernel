@@ -9,7 +9,7 @@ As stated by Zig, it is by far not done and although the language itself is decl
 
 I started this project with the goal of writing a small kernel (with userspace) in zig. I then had the idea to first implement a driver for the qemu ramfb interface in zig for this kernel.
 Whilst doing this I discovered numerous (or few very elementary) flaws in Zig, which do not let me continue this project. 
-I instead implemented the driver in C: https://github.com/luickk/qemu-ramfb-aarch64-driver \n and also filed an issue with a complete description of the observed behaviour and hypothesis: https://github.com/ziglang/zig/issues/11859 .
+I instead implemented the driver in C: https://github.com/luickk/qemu-ramfb-aarch64-driver and also filed an issue with a complete description of the observed behaviour and hypothesis: https://github.com/ziglang/zig/issues/11859 .
 
 As up to now, depending on the build mode (more on that in the gh issue), the kernel ether runs but doesn't properly write to mmio or it hangs (jumps to an interrupt handler) but writes to mmio berforehand. The actual behaviour is way more complex and weird and can be read in the filed gh issue. 
 
