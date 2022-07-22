@@ -7,11 +7,12 @@ pub fn build(b: *std.build.Builder) void {
     // zig build solution (not working)
     const exe = b.addExecutable("kernel", null);
     exe.setTarget(.{ .cpu_arch = std.Target.Cpu.Arch.aarch64, .os_tag = std.Target.Os.Tag.freestanding });
-    exe.setBuildMode(std.builtin.Mode.Debug);
+    exe.setBuildMode(std.builtin.Mode.ReleaseSmall);
 
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
     exe.addObjectFile("src/kernel.zig");
-    exe.addCSourceFile("src/boot.s", &.{});
+    exe.addCSourceFile("src/boot.S", &.{});
+    exe.addCSourceFile("src/exception_vec.S", &.{});
 
     exe.install();
 

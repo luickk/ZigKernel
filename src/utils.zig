@@ -6,7 +6,7 @@ pub const PrintStyle = enum(u8) {
     binary = 2,
 };
 
-pub fn str_cmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: usize) bool {
+pub fn strCmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: usize) bool {
     var i_cmp: usize = 0;
     if (str1_len != str2_len) {
         return false;
@@ -19,7 +19,7 @@ pub fn str_cmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: 
     return true;
 }
 
-pub fn memcmp_str(s1: [*]const u8, s2: [*]const u8, n: usize) bool {
+pub fn memcmpStr(s1: [*]const u8, s2: [*]const u8, n: usize) bool {
     if (s1 == undefined or s2 == undefined) {
         return false;
     }
@@ -36,7 +36,7 @@ pub fn assert(ok: bool) void {
     if (!ok) unreachable; // assertion failure
 }
 
-pub fn reverse_string(str: [*]u8, len: usize) void {
+pub fn reverseString(str: [*]u8, len: usize) void {
     var start: usize = 0;
     var end: usize = len - 1;
     var temp: u8 = 0;
@@ -74,7 +74,7 @@ pub fn uitoa(num: u64, print_style: PrintStyle) struct { arr: [20]u8, len: u8 } 
 
         num_i = num_i / @enumToInt(print_style);
     }
-    reverse_string(&str, i);
+    reverseString(&str, i);
     return .{ .arr = str, .len = i };
 }
 
@@ -96,7 +96,7 @@ test "itoa test" {
 
 test "reverse_string test" {
     var res = "abvc".*;
-    reverse_string(@as([*]u8, &res), 4);
+    reverseString(@as([*]u8, &res), 4);
     assert(res[0] == 'c');
     assert(res[1] == 'v');
     assert(res[2] == 'b');
@@ -106,7 +106,7 @@ test "reverse_string test" {
 test "str_cmp test" {
     var l = "dd";
     var p = "dd";
-    if (!str_cmp(l, p, l.len, p.len)) {
+    if (!strCmp(l, p, l.len, p.len)) {
         assert(false);
     }
 }
@@ -114,7 +114,7 @@ test "str_cmp test" {
 test "str memcmp test" {
     var l = "dd";
     var p = "dd";
-    if (!memcmp_str(l, p, l.len)) {
+    if (!memcmpStr(l, p, l.len)) {
         assert(false);
     }
 }

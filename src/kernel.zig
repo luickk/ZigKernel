@@ -1,9 +1,18 @@
 const serial = @import("serial.zig");
-const frame_buff_writer = @import("frame_buffer.zig").FbWriter;
+const frame_buff_writer = @import("frameBuffer.zig").FbWriter;
 const utils = @import("utils.zig");
 const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
-const ramFb = @import("ramfb.zig");
-const qemu_dma = @import("qemu_dma.zig");
+const ramFb = @import("ramFb.zig");
+const qemu_dma = @import("qemuDma.zig");
+
+const irqHandle = @import("zig-gicv3/src/irqHandle.zig");
+const gic = @import("zig-gicv3/src/gicv3.zig");
+const aarch64 = @import("zig-gicv3/src/aarch64.zig");
+const irqUtils = @import("zig-gicv3/src/utils.zig");
+
+comptime {
+    @export(irqHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
+}
 
 export fn kernel_main() callconv(.Naked) noreturn {
     // get address of external linker script variable which marks stack-top and heap-start
@@ -12,11 +21,34 @@ export fn kernel_main() callconv(.Naked) noreturn {
         unreachable;
     });
 
+    // GIC Init
+    gic.gic_v3_initialize();
+
+    // irqUtils.exception_svc_test();
+
     var allocator = WaterMarkAllocator.init(heap_start, 5000000);
 
-    ramFb.ramfb_setup(&allocator) catch |err| {
+    ramFb.ramfbSetup(&allocator, heap_start) catch |err| {
         serial.kprintf("error while setting up ramfb: {u} \n", .{@errorToInt(err)}) catch unreachable;
     };
 
     while (true) {}
 }
+
+export fn el1_sp0_sync() void {}
+export fn el1_sp0_irq() void {}
+export fn el1_sp0_fiq() void {}
+export fn el1_sp0_error() void {}
+export fn el1_irw() void {}
+export fn el1_sync() void {}
+export fn el1_fiq() void {}
+export fn el1_error() void {}
+export fn el0_sync() void {}
+export fn el0_irq() void {}
+export fn el1_irq() void {}
+export fn el0_fiq() void {}
+export fn el0_error() void {}
+export fn el0_32_sync() void {}
+export fn el0_32_irq() void {}
+export fn el0_32_fiq() void {}
+export fn el0_32_error() void {}

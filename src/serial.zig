@@ -11,13 +11,13 @@ pub const KprintfErr = error{
     NotEnoughArgs,
 };
 
-fn put_char(ch: u8) void {
+fn putChar(ch: u8) void {
     mmio_uart.* = ch;
 }
 
 fn kprint(print_string: []const u8) void {
     for (print_string) |ch| {
-        put_char(ch);
+        putChar(ch);
     }
 }
 
@@ -29,7 +29,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
         switch (ch) {
             else => {
                 if (print_state == KprintfParsingState.printing_ch) {
-                    put_char(ch);
+                    putChar(ch);
                 }
             },
             '{' => {
@@ -42,7 +42,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
                         if (i_args_parsed >= args.len) {
                             return KprintfErr.NotEnoughArgs;
                         }
-                        kprint_ui(args[i_args_parsed], utils.PrintStyle.string);
+                        kprintUi(args[i_args_parsed], utils.PrintStyle.string);
                         i_args_parsed += 1;
                     },
                     's' => {
@@ -80,7 +80,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
 // }
 
 // -- cannot use existing functions(commented fn above) because of Zig Aarch64 issue described here https://github.com/ziglang/zig/issues/11859
-pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
+pub fn kprintUi(num: u64, print_style: utils.PrintStyle) void {
     var str = [_]u8{0} ** 20;
 
     if (num == 0) {
@@ -102,10 +102,10 @@ pub fn kprint_ui(num: u64, print_style: utils.PrintStyle) void {
 
         num_i = num_i / @enumToInt(print_style);
     }
-    utils.reverse_string(&str, i);
+    utils.reverseString(&str, i);
 
     var j: usize = 0;
     while (j < i) : (j += 1) {
-        put_char(str[j]);
+        putChar(str[j]);
     }
 }

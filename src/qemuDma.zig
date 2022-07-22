@@ -46,7 +46,7 @@ pub fn barrier() void {
     asm volatile ("ISB");
 }
 
-fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
+fn qemuCfgDmaTransfer(addr: u64, len: u32, control: u32) void {
     dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
 
     barrier();
@@ -60,31 +60,31 @@ fn qemu_cfg_dma_transfer(addr: u64, len: u32, control: u32) void {
     while ((@byteSwap(u32, dma_acc_ctrl_check.*) & ~@intCast(u8, qemu_cfg_dma_ctl_error)) != 0) {}
 }
 
-pub fn qemu_cfg_find_file() ?u32 {
+pub fn qemuCfgFindFile() ?u32 {
     count = 0;
-    qemu_cfg_read_entry(&count, qemu_cfg_file_dir, @sizeOf(u32));
+    qemuCfgReadEntry(&count, qemu_cfg_file_dir, @sizeOf(u32));
     count = @byteSwap(u32, count);
 
     var e: u32 = 0;
     while (e < count) : (e += 1) {
-        qemu_cfg_read(&qfile, @sizeOf(QemuCfgFile));
-        if (utils.memcmp_str(&qfile.name, "etc/ramfb", 9)) {
+        qemuCfgRead(&qfile, @sizeOf(QemuCfgFile));
+        if (utils.memcmpStr(&qfile.name, "etc/ramfb", 9)) {
             return @byteSwap(u32, qfile.select);
         }
     }
     return null;
 }
 
-fn qemu_cfg_read(buff: *anyopaque, len: u32) void {
-    qemu_cfg_dma_transfer(@ptrToInt(buff), len, @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_read));
+fn qemuCfgRead(buff: *anyopaque, len: u32) void {
+    qemuCfgDmaTransfer(@ptrToInt(buff), len, @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_read));
 }
 
-fn qemu_cfg_read_entry(buff: *anyopaque, e: u32, len: u32) void {
+fn qemuCfgReadEntry(buff: *anyopaque, e: u32, len: u32) void {
     var control: u32 = (e << 16) | @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_select) | @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_read);
-    qemu_cfg_dma_transfer(@ptrToInt(buff), len, control);
+    qemuCfgDmaTransfer(@ptrToInt(buff), len, control);
 }
 
-pub fn qemu_cfg_write_entry(buff: *anyopaque, e: u32, len: u32) void {
+pub fn qemuCfgWriteEntry(buff: *anyopaque, e: u32, len: u32) void {
     var control: u32 = (e << 16) | @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_select) | @enumToInt(QemuCfgDmaControlBits.qemu_cfg_dma_ctl_write);
-    qemu_cfg_dma_transfer(@ptrToInt(buff), len, control);
+    qemuCfgDmaTransfer(@ptrToInt(buff), len, control);
 }
