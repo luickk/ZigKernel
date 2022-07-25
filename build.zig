@@ -12,7 +12,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
     exe.addObjectFile("src/kernel.zig");
     exe.addCSourceFile("src/boot.S", &.{});
-    exe.addCSourceFile("src/exception_vec.S", &.{});
+    exe.addCSourceFile("src/zig-gicv3/src/exception_vec.S", &.{});
 
     exe.install();
 

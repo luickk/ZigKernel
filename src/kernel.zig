@@ -5,13 +5,12 @@ const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 const ramFb = @import("ramFb.zig");
 const qemu_dma = @import("qemuDma.zig");
 
-const irqHandle = @import("zig-gicv3/src/irqHandle.zig");
+const intHandle = @import("zig-gicv3/src/intHandle.zig");
 const gic = @import("zig-gicv3/src/gicv3.zig");
-const aarch64 = @import("zig-gicv3/src/aarch64.zig");
 const irqUtils = @import("zig-gicv3/src/utils.zig");
 
 comptime {
-    @export(irqHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
+    @export(intHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
 }
 
 export fn kernel_main() callconv(.Naked) noreturn {
@@ -22,7 +21,7 @@ export fn kernel_main() callconv(.Naked) noreturn {
     });
 
     // GIC Init
-    gic.gic_v3_initialize();
+    gic.gicV3Initialize();
 
     // irqUtils.exception_svc_test();
 
