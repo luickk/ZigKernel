@@ -16,7 +16,7 @@ comptime {
 export fn kernel_main() callconv(.Naked) noreturn {
     // get address of external linker script variable which marks stack-top and heap-start
     const heap_start: *anyopaque = @as(*anyopaque, @extern(?*u8, .{ .name = "_stack_top" }) orelse {
-        serial.kprintf("error reading _stack_top label\n", .{}) catch unreachable;
+        serial.kprintf("error reading _stack_top label\n", .{});
         unreachable;
     });
 
@@ -28,9 +28,9 @@ export fn kernel_main() callconv(.Naked) noreturn {
     var allocator = WaterMarkAllocator.init(heap_start, 5000000);
 
     ramFb.ramfbSetup(&allocator, heap_start) catch |err| {
-        serial.kprintf("error while setting up ramfb: {u} \n", .{@errorToInt(err)}) catch unreachable;
+        serial.kprintf("error while setting up ramfb: {u} \n", .{@errorToInt(err)});
     };
-
+    serial.kprintf("kernel boot complete \n", .{});
     while (true) {}
 }
 

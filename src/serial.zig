@@ -21,7 +21,7 @@ fn kprint(print_string: []const u8) void {
     }
 }
 
-pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
+pub fn kprintf(comptime print_string: []const u8, args: anytype) void {
     comptime var print_state = KprintfParsingState.printing_ch;
     comptime var i_args_parsed: u8 = 0;
     // inline required bc not rolled out loop wouldn't mut printing_ch
@@ -37,26 +37,26 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
                 switch (print_string[i + 1]) {
                     'u' => {
                         if (print_string[i + 2] != '}') {
-                            return KprintfErr.TypeNotFound;
+                            @panic(KprintfErr.TypeNotFound);
                         }
                         if (i_args_parsed >= args.len) {
-                            return KprintfErr.NotEnoughArgs;
+                            @panic(KprintfErr.NotEnoughArgs);
                         }
                         kprintUi(args[i_args_parsed], utils.PrintStyle.string);
                         i_args_parsed += 1;
                     },
                     's' => {
                         if (print_string[i + 2] != '}') {
-                            return KprintfErr.TypeNotFound;
+                            @panic(KprintfErr.TypeNotFound);
                         }
                         if (i_args_parsed >= args.len) {
-                            return KprintfErr.NotEnoughArgs;
+                            @panic(KprintfErr.NotEnoughArgs);
                         }
                         kprint(args[i_args_parsed]);
                         i_args_parsed += 1;
                     },
                     else => {
-                        return KprintfErr.TypeNotFound;
+                        @panic(KprintfErr.TypeNotFound);
                     },
                 }
             },
@@ -67,7 +67,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) !void {
         }
     }
     if (i_args_parsed != args.len) {
-        return KprintfErr.UnusedArgs;
+        @panic(KprintfErr.UnusedArgs);
     }
 }
 

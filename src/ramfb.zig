@@ -30,7 +30,7 @@ pub fn ramfbSetup(allocator: *WaterMarkAllocator, heap_start: *anyopaque) !void 
     _ = allocator;
     const select: u32 = qemu_dma.qemuCfgFindFile() orelse return RamFbError.RamfbFileNotFound;
 
-    serial.kprintf("found ramfb_cfg \n", .{}) catch unreachable;
+    serial.kprintf("found ramfb_cfg \n", .{});
 
     // fb = allocator.malloc(fb_size) catch unreachable;
     ramfb_cfg = qemu_dma.QemuRAMFBCfg{
@@ -41,8 +41,8 @@ pub fn ramfbSetup(allocator: *WaterMarkAllocator, heap_start: *anyopaque) !void 
         .height = @byteSwap(u32, fb_height),
         .stride = @byteSwap(u32, fb_stride),
     };
-    serial.kprintf("inited struct cfg \n", .{}) catch unreachable;
+    serial.kprintf("inited struct cfg \n", .{});
 
     qemu_dma.qemuCfgWriteEntry(&ramfb_cfg, select, @sizeOf(qemu_dma.QemuRAMFBCfg));
-    serial.kprintf("after write \n", .{}) catch unreachable;
+    serial.kprintf("after write \n", .{});
 }
