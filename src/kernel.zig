@@ -5,9 +5,9 @@ const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
 const ramFb = @import("ramFb.zig");
 const qemu_dma = @import("qemuDma.zig");
 
-const intHandle = @import("zig-gicv3/src/intHandle.zig");
-const gic = @import("zig-gicv3/src/gicv3.zig");
-const irqUtils = @import("zig-gicv3/src/utils.zig");
+const intHandle = @import("zig-gicv2/src/intHandle.zig");
+const gic = @import("zig-gicv2/src/gicv2.zig");
+const irqUtils = @import("zig-gicv2/src/utils.zig");
 
 comptime {
     @export(intHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
@@ -21,7 +21,7 @@ export fn kernel_main() callconv(.Naked) noreturn {
     });
 
     // GIC Init
-    gic.gicV3Initialize();
+    gic.gicv2Initialize();
 
     // irqUtils.exception_svc_test();
 
