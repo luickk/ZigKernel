@@ -6,28 +6,13 @@ pub const PrintStyle = enum(u8) {
     binary = 2,
 };
 
-pub fn strCmp(str1: [*]const u8, str2: [*]const u8, str1_len: usize, str2_len: usize) bool {
-    var i_cmp: usize = 0;
-    if (str1_len != str2_len) {
-        return false;
-    }
-    while (i_cmp < str1_len) : (i_cmp += 1) {
-        if (str1[i_cmp] != str2[i_cmp]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-pub fn memcmpStr(s1: [*]const u8, s2: [*]const u8, n: usize) bool {
-    if (s1 == undefined or s2 == undefined) {
-        return false;
-    }
-    var n_i = n;
-    while (n_i > 0) : (n_i -= 1) {
-        if (s1[n] - s2[n] > 0) {
-            return false;
-        }
+// from zig std
+/// Compares two slices and returns whether they are equal.
+pub fn eql(comptime T: type, a: []const T, b: []const T) bool {
+    if (a.len != b.len) return false;
+    if (a.ptr == b.ptr) return true;
+    for (a) |item, index| {
+        if (b[index] != item) return false;
     }
     return true;
 }
@@ -101,20 +86,4 @@ test "reverse_string test" {
     assert(res[1] == 'v');
     assert(res[2] == 'b');
     assert(res[3] == 'a');
-}
-
-test "str_cmp test" {
-    var l = "dd";
-    var p = "dd";
-    if (!strCmp(l, p, l.len, p.len)) {
-        assert(false);
-    }
-}
-
-test "str memcmp test" {
-    var l = "dd";
-    var p = "dd";
-    if (!memcmpStr(l, p, l.len)) {
-        assert(false);
-    }
 }

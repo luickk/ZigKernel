@@ -1,17 +1,16 @@
-# ZigKernel for aarch64
+# Minimal Bare Metal Zig Kernel for aarch64
 Very basic aarch64 kernel written in Zig.
 
 Currently based on https://wiki.osdev.org/QEMU_AArch64_Virt_Bare_Bones
 
 # Status
 
-As stated by Zig, it is by far not done and although the language itself is declared as stable, a kernel is an edge case which is apperantly not completely bug free (yet).
+I started this project with the goal of writing a simple kernel with a few drivers (in zig). Since Zig is not completely stable (yet; on aarch64), I found a few issues and quirks one of which is a compiler bug.
+The compiler bug is an issue with struct returns, that is not resolved yet, it's not a dealbreaker though, since one can maneuver around that.
+I posted that issue on Zigs git with a complete description of the observed behaviour and hypothesis: https://github.com/ziglang/zig/issues/11859.
+For debugging purposes I implemented the ramfb driver in C as well(which helped me to resolve the issue): https://github.com/luickk/qemu-ramfb-aarch64-driver and the arm a53 interrupt controller gicv2: https://github.com/luickk/zig-gicv2.
 
-I started this project with the goal of writing a small kernel (with userspace) in zig. I then had the idea to first implement a driver for the qemu ramfb interface in zig for this kernel.
-Whilst doing this I discovered numerous (or few very elementary) flaws in Zig, which do not let me continue this project. 
-I instead implemented the driver in C: https://github.com/luickk/qemu-ramfb-aarch64-driver and also filed an issue with a complete description of the observed behaviour and hypothesis: https://github.com/ziglang/zig/issues/11859 .
-
-As up to now, depending on the build mode (more on that in the gh issue), the kernel ether runs but doesn't properly write to mmio or it hangs (jumps to an interrupt handler) but writes to mmio berforehand. The actual behaviour is way more complex and weird and can be read in the filed gh issue. 
+As up to now, depending on the build mode (more on that in the gh issue), the kernel either runs fine & the ramfb driver works or it doesn't even start up.
 
 ## Setup
 

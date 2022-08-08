@@ -6,12 +6,6 @@ const qemu_cfg_dma_base_dma_addr: u64 = 0x9020010;
 const qemu_cfg_dma_ctl_error = 0x01;
 const qemu_cfg_file_dir = 0x19;
 
-// static vars required because of mmio writes to those addresses,
-// could, if not inited static corrupt the stack
-var dma_acc: QemuCfgDmaAccess = undefined;
-var count: u32 = undefined;
-var qfile: QemuCfgFile = undefined;
-
 pub const QemuCfgDmaAccess = packed struct {
     control: u32,
     len: u32,
@@ -26,15 +20,6 @@ pub const QemuCfgDmaControlBits = enum(u8) {
     qemu_cfg_dma_ctl_write = 0x10,
 };
 
-pub const QemuRAMFBCfg = packed struct {
-    addr: u64,
-    fourcc: u32,
-    flags: u32,
-    width: u32,
-    height: u32,
-    stride: u32,
-};
-
 const QemuCfgFile = struct {
     size: u32, // file size
     select: u16, // write this to 0x510 to read it
@@ -47,7 +32,7 @@ pub fn barrier() void {
 }
 
 fn qemuCfgDmaTransfer(addr: u64, len: u32, control: u32) void {
-    dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
+    var dma_acc = .{ .control = @byteSwap(u32, control), .len = @byteSwap(u32, len), .address = @byteSwap(u64, addr) };
 
     barrier();
 
@@ -61,18 +46,22 @@ fn qemuCfgDmaTransfer(addr: u64, len: u32, control: u32) void {
 }
 
 pub fn qemuCfgFindFile() ?u32 {
-    count = 0;
+    var count: u32 = 0;
+    var e: u32 = 0;
+    var select: u16 = 0;
     qemuCfgReadEntry(&count, qemu_cfg_file_dir, @sizeOf(u32));
     count = @byteSwap(u32, count);
 
-    var e: u32 = 0;
     while (e < count) : (e += 1) {
+        var qfile: QemuCfgFile = undefined;
         qemuCfgRead(&qfile, @sizeOf(QemuCfgFile));
-        if (utils.memcmpStr(&qfile.name, "etc/ramfb", 9)) {
-            return @byteSwap(u32, qfile.select);
+        if (utils.eql(u8, qfile.name[0..9], "etc/ramfb")) {
+            select = @byteSwap(u16, qfile.select);
         }
     }
-    return null;
+    if (select == 0)
+        return null;
+    return select;
 }
 
 fn qemuCfgRead(buff: *anyopaque, len: u32) void {

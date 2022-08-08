@@ -1,21 +1,17 @@
 const serial = @import("serial.zig");
 const frame_buff_writer = @import("frameBuffer.zig").FbWriter;
 const utils = @import("utils.zig");
-const WaterMarkAllocator = @import("allocator.zig").WaterMarkAllocator;
-const ramFb = @import("ramFb.zig");
+const ramFb = @import("ramFb.zig").ramFbDisplay;
 const qemu_dma = @import("qemuDma.zig");
+const test_img = @import("image_rgb_map.zig").testImg;
 
 const intHandle = @import("zig-gicv2/src/intHandle.zig");
 const gic = @import("zig-gicv2/src/gicv2.zig");
 const irqUtils = @import("zig-gicv2/src/utils.zig");
 
-comptime {
-    @export(intHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
-}
-
 export fn kernel_main() callconv(.Naked) noreturn {
     // get address of external linker script variable which marks stack-top and heap-start
-    const heap_start: *anyopaque = @as(*anyopaque, @extern(?*u8, .{ .name = "_stack_top" }) orelse {
+    const heap_start: usize = @ptrToInt(@extern(?*u8, .{ .name = "_stack_top" }) orelse {
         serial.kprintf("error reading _stack_top label\n", .{});
         unreachable;
     });
@@ -25,13 +21,21 @@ export fn kernel_main() callconv(.Naked) noreturn {
 
     // irqUtils.exception_svc_test();
 
-    var allocator = WaterMarkAllocator.init(heap_start, 5000000);
+    var display = ramFb.init(heap_start, 1024, 768, 4);
 
-    ramFb.ramfbSetup(&allocator, heap_start) catch |err| {
-        serial.kprintf("error while setting up ramfb: {u} \n", .{@errorToInt(err)});
+    display.ramfbSetup() catch |err| {
+        serial.kprintf("error while setting up ramfb: {s} \n", .{@errorName(err)});
     };
+
+    display.drawAllWhite();
+    // display.drawRgb256Map(500, 500, &test_img);
+
     serial.kprintf("kernel boot complete \n", .{});
     while (true) {}
+}
+
+comptime {
+    @export(intHandle.common_trap_handler, .{ .name = "common_trap_handler", .linkage = .Strong });
 }
 
 export fn el1_sp0_sync() void {}

@@ -4,6 +4,7 @@ _start:
     ldr x0, = exception_vector_table
     msr vbar_el1, x0
     
+    // enabling fp/ smid
     mov x0, #3 << 20
     msr cpacr_el1, x0
         
