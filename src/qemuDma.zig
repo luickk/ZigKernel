@@ -1,5 +1,5 @@
 const utils = @import("utils.zig");
-const serial = @import("serial.zig");
+const kprint = @import("serial.zig").kprint;
 
 const qemu_cfg_dma_base_dma_addr: u64 = 0x9020010;
 

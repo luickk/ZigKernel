@@ -1,6 +1,6 @@
 const qemu_dma = @import("qemuDma.zig");
 const utils = @import("utils.zig");
-const serial = @import("serial.zig");
+const kprint = @import("serial.zig").kprint;
 
 const RamFbError = error{RamfbFileNotFound};
 
@@ -48,7 +48,7 @@ pub const ramFbDisplay = struct {
     pub fn ramfbSetup(cfg: *ramFbDisplay) !void {
         const select: u32 = qemu_dma.qemuCfgFindFile() orelse return RamFbError.RamfbFileNotFound;
 
-        serial.kprintf("found ramfb_cfg \n", .{});
+        kprint("found ramfb_cfg \n", .{});
 
         var ramfb_cfg = QemuRAMFBCfg{
             .addr = @byteSwap(u64, cfg.fb_addr),
@@ -61,17 +61,15 @@ pub const ramFbDisplay = struct {
 
         qemu_dma.qemuCfgWriteEntry(&ramfb_cfg, select, @sizeOf(QemuRAMFBCfg));
     }
+
+    // setting all pixels(including padding) to white
     pub fn drawAllWhite(cfg: *ramFbDisplay) void {
-        // setting all pixels to white
-        var pixel = [3]u8{ 255, 255, 255 };
         var i: u32 = 0;
-        var j: u32 = 0;
-        while (i < cfg.display_width) : (i += 1) {
-            while (j < cfg.display_height) : (j += 1) {
-                @memcpy(@intToPtr([*]u8, cfg.fb_addr + ((j * cfg.display_stride) + (i * cfg.display_bpp))), @ptrCast([*]const u8, &pixel), 4);
-            }
+        while (i < cfg.fb_size) : (i += 1) {
+            @intToPtr(*u8, cfg.fb_addr + i).* = 255;
         }
     }
+
     pub fn drawRgb256Map(cfg: *ramFbDisplay, x_res: u32, y_res: u32, rgb_map: []const u32) void {
         var rgb_map_bytes = @bitCast([]const u8, rgb_map);
         var map_stride: u32 = x_res * cfg.display_bpp;
@@ -79,15 +77,15 @@ pub const ramFbDisplay = struct {
 
         var i: u32 = 0;
         var map_i: u32 = 0;
+        // var fb_arr = @intToPtr([*]u8, cfg.fb_addr);
         while (map_i < map_size) : (map_i += 4) {
             if (map_i % map_stride == 0 and map_i != 0) {
                 i += cfg.display_stride - map_stride;
             }
             // 1 compensates for alignement (xRGB)
             @memcpy(@intToPtr([*]u8, cfg.fb_addr + i), @ptrCast([*]const u8, &rgb_map_bytes[map_i]), 4);
-
-            serial.kprintf("{u}, {u} \n", .{ i, map_i });
             i += 4;
         }
+        kprint("size: {u} \n", .{map_size});
     }
 };

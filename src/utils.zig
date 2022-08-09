@@ -1,4 +1,4 @@
-const serial = @import("serial.zig");
+const kprint = @import("serial.zig").kprint;
 
 pub const PrintStyle = enum(u8) {
     string = 10,

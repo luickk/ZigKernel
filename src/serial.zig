@@ -15,13 +15,13 @@ fn putChar(ch: u8) void {
     mmio_uart.* = ch;
 }
 
-fn kprint(print_string: []const u8) void {
+fn print(print_string: []const u8) void {
     for (print_string) |ch| {
         putChar(ch);
     }
 }
 
-pub fn kprintf(comptime print_string: []const u8, args: anytype) void {
+pub fn kprint(comptime print_string: []const u8, args: anytype) void {
     comptime var print_state = KprintfParsingState.printing_ch;
     comptime var i_args_parsed: u8 = 0;
     // inline required bc not rolled out loop wouldn't mut printing_ch
@@ -52,7 +52,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) void {
                         if (i_args_parsed >= args.len) {
                             @panic(KprintfErr.NotEnoughArgs);
                         }
-                        kprint(args[i_args_parsed]);
+                        print(args[i_args_parsed]);
                         i_args_parsed += 1;
                     },
                     else => {
@@ -80,7 +80,7 @@ pub fn kprintf(comptime print_string: []const u8, args: anytype) void {
 // }
 
 // -- cannot use existing functions(commented fn above) because of Zig Aarch64 issue described here https://github.com/ziglang/zig/issues/11859
-pub fn kprintUi(num: u64, print_style: utils.PrintStyle) void {
+fn kprintUi(num: u64, print_style: utils.PrintStyle) void {
     var str = [_]u8{0} ** 20;
 
     if (num == 0) {

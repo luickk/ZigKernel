@@ -1,4 +1,4 @@
-const serial = @import("serial.zig");
+const kprint = @import("serial.zig").kprint;
 const frame_buff_writer = @import("frameBuffer.zig").FbWriter;
 const utils = @import("utils.zig");
 const ramFb = @import("ramFb.zig").ramFbDisplay;
@@ -12,7 +12,7 @@ const irqUtils = @import("zig-gicv2/src/utils.zig");
 export fn kernel_main() callconv(.Naked) noreturn {
     // get address of external linker script variable which marks stack-top and heap-start
     const heap_start: usize = @ptrToInt(@extern(?*u8, .{ .name = "_stack_top" }) orelse {
-        serial.kprintf("error reading _stack_top label\n", .{});
+        kprint("error reading _stack_top label\n", .{});
         unreachable;
     });
 
@@ -21,16 +21,16 @@ export fn kernel_main() callconv(.Naked) noreturn {
 
     // irqUtils.exception_svc_test();
 
-    var display = ramFb.init(heap_start, 1024, 768, 4);
+    var display = ramFb.init(heap_start, 500, 500, 4);
 
     display.ramfbSetup() catch |err| {
-        serial.kprintf("error while setting up ramfb: {s} \n", .{@errorName(err)});
+        kprint("error while setting up ramfb: {s} \n", .{@errorName(err)});
     };
 
-    display.drawAllWhite();
-    // display.drawRgb256Map(500, 500, &test_img);
+    // display.drawAllWhite();
+    display.drawRgb256Map(500, 500, &test_img);
 
-    serial.kprintf("kernel boot complete \n", .{});
+    kprint("kernel boot complete \n", .{});
     while (true) {}
 }
 
